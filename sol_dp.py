@@ -1,4 +1,4 @@
-import time
+#sol_dp.py
 
 MOD = 10**9 + 7
 MAX_L = 200
@@ -29,20 +29,3 @@ def resultado_montanias(mon):
     for (L, H) in mon:
         resultados.append(res_montanias[2*L][0][H])
     return resultados
-
-
-montanias = [(2, 1), (3, 2), (4, 3)]
-
-# Medición de tiempo
-start_time = time.time()
-
-resultados = resultado_montanias(montanias)
-
-end_time = time.time()
-execution_time = end_time - start_time
-
-# Imprimimos los resultados y el tiempo de ejecución
-for resultado in resultados:
-    print(resultado)
-
-print(f"Tiempo de ejecución (Programación Dinámica Bottom-Up): {execution_time:.6f} segundos")

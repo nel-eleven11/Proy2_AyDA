@@ -1,45 +1,58 @@
-import time
+#sol_dac.py
 
 MOD = 10**9 + 7
+MAX_L = 200
+MAX_H = 200
+
+montanias = [[[-1 for _ in range(MAX_H + 1)] for __ in range(MAX_H + 1)] for ___ in range(2 * MAX_L + 1)]
 
 # Función recursiva para calcular el número de montañas rusas
-def contar_montanias(L, H, resultados):
+def contar_montanias(t, ch, mh):
     # Caso base: Si no hay tramos, solo hay una forma de estar a nivel 0 y con altura máxima 0
-    if L == 0:
-        return 1 if H == 0 else 0
+    if t == 0:
+        return 1 if (ch == 0 and mh == 0) else 0
 
-    # Verificar si ya hemos calculado este subproblema
-    if (L, H) in resultados:
-        return resultados[(L, H)]
+    # Verificar límites
+    if ch < 0 or ch > MAX_H or mh < 0 or mh > MAX_H:
+        return 0
 
-    # Caso en que la montaña finaliza en altura 0 (el último tramo es descendente)
-    res = contar_montanias(L - 1, H, resultados)
+    # Verificar si ya hemos calculado este estado
+    if montanias[t][ch][mh] != -1:
+        return montanias[t][ch][mh]
 
-    # Caso en que la montaña finaliza en una altura máxima mayor a 0
-    if H > 0:
-        res = (res + contar_montanias(L - 1, H - 1, resultados)) % MOD
-        res = (res + contar_montanias(L - 1, H, resultados)) % MOD
+    result = 0
 
-    # Guardamos el resultado para evitar recalcularlo
-    resultados[(L, H)] = res
-    return res
+    # Caso 1: estamos al nivel del suelo (c = 0)
+    if ch == 0:
+        # El tramo anterior solo puede ser descendente (viniendo de altura 1)
+        result = contar_montanias(t-1, 1, mh)
 
-# Función para procesar varias consultas
-def calc_montanias(mon):
-    resultados = {}
-    for (L, H) in mon:
-        print(contar_montanias(L, H, resultados))
+    # Caso 2: estamos en la altura máxima
+    elif ch == mh:
+        # El tramo anterior debe ser ascendente (viniendo de mh-1)
+        # Dos subcasos:
+        # 1. La altura máxima ya se había alcanzado antes
+        # 2. Este es el primer punto donde se alcanza la altura máxima
+        if mh > 0:
+            case1 = contar_montanias(t-1, mh-1, mh)
+            case2 = contar_montanias(t-1, mh-1, mh-1)
+            result = (case1 + case2) % MOD
 
-# Ejemplo de uso con consultas (L, H)
-montanias = [(2, 1), (3, 2), (4, 3)]
+    # Caso 3: estamos en una altura intermedia (0 < ch < mh)
+    else:
+        # El tramo anterior puede ser ascendente o descendente
+        if ch > 0 and mh > 0:
+            ascend = contar_montanias(t-1, ch-1, mh)
+            descend = contar_montanias(t-1, ch+1, mh)
+            result = (ascend + descend) % MOD
 
-# Medición de tiempo
-start_time = time.time()  # Tiempo de inicio
+    # Almacenar el resultado en la tabla de memoization
+    montanias[t][ch][mh] = result
+    return result
 
-calc_montanias(montanias)
+def calc_montanias(consultas):
+    for (L, H) in consultas:
+        res = contar_montanias(2*L, 0, H)
+        return res
 
-end_time = time.time()  # Tiempo de finalización
-execution_time = end_time - start_time  # Calculamos el tiempo de ejecución
 
-# Imprimimos el tiempo de ejecución
-print(f"Tiempo de ejecución (Divide and Conquer): {execution_time:.6f} segundos")
